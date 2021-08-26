@@ -58,3 +58,15 @@ traefiktest$ `docker build . -t pyflaskserver:latest`
 then you can start the images using 
 
 traefiktest$ `docker-compose up`
+
+## Services
+
+When the application is running it will have 4 services in different types of endpoints
+
+traefik.example.com will be shared between the following services:
+`frontend on /`
+`head on /head`
+`api on /api`
+
+introvert.example.com will not be connected to the other services and will by it self only be: 
+`introvert on /`
