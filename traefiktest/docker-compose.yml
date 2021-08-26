@@ -42,6 +42,7 @@ services:
       # next service is named 'head' giving "traefik.http.services.head.."
       - "traefik.http.routers.head.rule=Host(`traefik.example.com`) && PathPrefix(`/head`)"
       # Host is in v2 writen as Host('hostname') and supports both && for both statements to be true
+      # for differences between V1 and V2 see: https://doc.traefik.io/traefik/migration/v1-to-v2/#strip-and-rewrite-path-prefixes
 
       - "traefik.http.routers.head.middlewares=head-stripprefix"
       # stripprefix is a middlewares that traefik needs to know where to find and needs a unique name
