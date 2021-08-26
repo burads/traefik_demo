@@ -1,0 +1,69 @@
+version: '3.3'
+services:
+  frontend:
+    image: pyflaskserver:latest
+    restart: always
+    networks:
+     - web
+    expose:
+      - "8080"
+    environment:
+      - SERVERS=frontend:8080;head:8080;api:8080
+      - SERVERNAME=frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.frontend.rule=Host(`traefik.example.com`)"
+  head:
+    image: pyflaskserver:latest
+    restart: always
+    networks:
+      - web
+    expose:
+      - "8080"
+    environment:
+      - SERVERS=frontend:8080;head:8080;api:8080;
+      - SERVERNAME=head
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.head.loadbalancer.server.port=8080"
+      - "traefik.http.routers.head.rule=Host(`traefik.example.com`) && PathPrefix(`/head`)"
+      - "traefik.http.routers.head.middlewares=head-stripprefix"
+      - "traefik.http.middlewares.head-stripprefix.stripprefix.prefixes=/head"
+  api:
+    image: pyflaskserver:latest
+    restart: always
+    networks:
+     - web
+    expose:
+      - "8080"
+    environment:
+      - SERVERS=frontend:8080;head:8080;api:8080;
+      - SERVERNAME=api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.api.loadbalancer.server.port=8080"
+      - "traefik.http.routers.api.rule=Host(`traefik.example.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+  introvert:
+    image: pyflaskserver:latest
+    restart: always
+    networks:
+      - web
+    expose:
+      - "8080"
+    environment:
+      - SERVERNAME=introvert
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.services.introvert.loadbalancer.server.port=8080"
+      - "traefik.http.routers.introvert.rule=Host(`introvert.example.com`)"
+networks:
+  web:
+    external: false
+    name: webNetwork
