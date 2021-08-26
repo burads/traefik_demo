@@ -9,12 +9,22 @@ services:
       - "8080"
     environment:
       - SERVERS=frontend:8080;head:8080;api:8080
+      # SERVERS define neighbour services
       - SERVERNAME=frontend
+      # SERVERNAME define name the python service should reply (to avoid the generic names of 6d9db0247785)
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
+      # as services run on a hidden network traefik needs to know where to find it.
+      # This can be avoided by using same docker compose
+
       - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+      # server.port shold be found automatically as container only exposes port 8080 but just for certainty
+      # About automatic port detection read https://doc.traefik.io/traefik/providers/docker/
+
       - "traefik.http.routers.frontend.rule=Host(`traefik.example.com`)"
+      # about naming traefik.http.<routers|services> are values trafic knows to itterate and there you define
+      # your application here as [frontend] with the <rule>...
   head:
     image: pyflaskserver:latest
     restart: always
@@ -29,9 +39,15 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
       - "traefik.http.services.head.loadbalancer.server.port=8080"
+      # next service is named 'head' giving "traefik.http.services.head.."
       - "traefik.http.routers.head.rule=Host(`traefik.example.com`) && PathPrefix(`/head`)"
+      # Host is in v2 writen as Host('hostname') and supports both && for both statements to be true
+
       - "traefik.http.routers.head.middlewares=head-stripprefix"
+      # stripprefix is a middlewares that traefik needs to know where to find and needs a unique name
+
       - "traefik.http.middlewares.head-stripprefix.stripprefix.prefixes=/head"
+      # you read the abobe statement as. middlewares by name head-stripprefix is a stripprefix by the value "/head"
   api:
     image: pyflaskserver:latest
     restart: always
@@ -46,7 +62,8 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
-      - "traefik.http.routers.api.rule=Host(`traefik.example.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.rule=Host(`traefik.example.com`) && PathPrefix(`/api`) || PathPrefix(`/api`)"
+      # Host is in v2 writen as Host('hostname') and supports both && for both statements to be true or || to or
       - "traefik.http.routers.api.middlewares=api-stripprefix"
       - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
   introvert:
